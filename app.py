@@ -30,44 +30,12 @@ collection: Collection = database.get_collection(f"{database_collection}")
 
 # Templates
 index_template = "index.html"
-register_template = "register.html"
 
 # Routes
 @app.route('/', methods=['GET', 'POST'])
 def main():
     tasks = list(collection.find())
     return render_template(index_template, tasks=tasks)
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        confirm_password = request.form.get("passwordRepeat")
-
-        if not username or not password or not confirm_password:
-            flash('Complete all the fields', 'error')
-            return redirect(url_for('register'))
-        
-        existing_user = collection.find_one({"$or": [{"username": username}]})
-
-        if existing_user:
-            flash('Username already exists', 'error')
-            return redirect(url_for('register'))
-        
-        if password != confirm_password:
-            flash('Passwords dont match', 'error')
-            return redirect(url_for('register'))
-        
-        data = {
-            "username": username,
-            "password": password
-        }
-        collection.insert_one(data)
-        
-        flash('You have succesfully registered', 'success')
-        return redirect(url_for('main'))
-    return render_template(register_template)
 
 @app.route('/add_task', methods=['POST'])
 def add_task():
