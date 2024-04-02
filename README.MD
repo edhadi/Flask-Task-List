@@ -9,9 +9,9 @@ This is a simple Task/To-Do list web application built using Flask.  Unlike many
 
 - [Features](#features)
 - [Technologies Used](#technologies-used)
-- [Screenshots](#screenshots)
 - [Installation and Usage](#installation-and-usage)
-- [Additional Information](#additional-information)
+- [Screenshots](#screenshots)
+
 ## Features
 
 - **Add Tasks**: Easily add tasks to your to-do list.
