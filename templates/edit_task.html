@@ -1,0 +1,36 @@
+<!-- edit_task.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Task</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}"/>
+</head>
+<body>
+    <div class="container">
+        <h1>Edit Task</h1>
+        <form action="/edit_task/{{ task.get('_id') }}" method="post">
+            <label for="taskName">Name:</label>
+            <input type="text" id="taskName" name="taskName" placeholder="Enter task name..." value="{{ task.get('Name') }}">
+            <label for="taskDescription">Description:</label>
+            <input type="text" id="taskDescription" name="taskDescription" placeholder="Enter task description..." value="{{ task.get('Description') }}">
+            <label>Status:</label>
+            <select name="status">
+                <option value="In Progress">In Progress</option>
+                <option value="Done">Done</option>
+            </select><br><br>
+            <button type="submit">Update Task</button>
+        </form>
+        <p id="formError" class="error-message">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  {% for category, message in messages %}
+                    <div class="alert {{ category }}"> {{ message|capitalize }} </div>
+                  {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </p>
+    </div>
+</body>
+</html>

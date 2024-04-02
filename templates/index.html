@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}"/>
+</head>
+<body>
+    <div class="container">
+        <h1>Task Manager</h1>
+        <form action="/add_task" method="post">
+            <label for="taskName">Name:</label>
+            <input type="text" id="taskName" name="taskName" placeholder="Enter task name...">
+            <label for="taskDescription">Description:</label>
+            <input type="text" id="taskDescription" name="taskDescription" placeholder="Enter task description...">
+            <label>Status:</label>
+            <select name="status">
+                <option value="Not Started">Not Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Done">Done</option>
+            </select><br><br>
+            <label>Due To:</label>
+            <input type="datetime-local" name="dueTo"><br><br>
+            <button type="submit">Add Task</button>
+        </form>
+        <p id="formError" class="error-message">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  {% for category, message in messages %}
+                    <div class="alert {{ category }}"> {{ message|capitalize }} </div>
+                  {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </p>
+        <!-- Update the HTML in your index.html file -->
+        <div class="tasks">
+            {% for task in tasks %}
+                <div class="task">
+                    <p><strong>Name:</strong> {{ task.get('Name') }}</p>
+                    <p><strong>Description:</strong> {{ task.get('Description') }}</p>
+                    {% if task.get('Status') %}
+                        <p class="task-status task-status-{{ task.get('Status').replace(' ', '-').lower() }}"><strong>Status:</strong> {{ task.get('Status') }}</p>
+                    {% else %}
+                        <p class="task-status"><strong>Status:</strong> Not Available</p>
+                    {% endif %}
+                    <p><strong>Due To:</strong> {{ task.get('DueTo') }}</p>
+                    <form action="{{ url_for('edit_task', task_id=task.get('_id')) }}" method="get">
+                        <button type="submit" class="edit-btn">Edit</button>
+                    </form>
+                    <form action="/delete_task" method="post">
+                        <input type="hidden" name="task_id" value="{{ task.get('_id') }}">
+                        <button type="submit" class="delete-btn">Delete</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
