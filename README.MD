@@ -30,7 +30,7 @@ This is a simple Task/To-Do list web application built using Flask.  Unlike many
 
 Before running this application, ensure you have the following dependencies installed:
 
-- **Python 3.x**: The application is built using Python 3.x. You can download and install Python from the [official website](https://www.python.org).
+- **Python 3.12.2**: The application is built using Python 3.12.2. You can download and install Python from the [official website](https://www.python.org).
 - **MongoDB Atlas Setup**:
     - Sign up for a free account on [MongoDB Atlas](https://www.mongodb.com).
     - Create a new cluster by following the instructions provided in the MongoDB Atlas dashboard.
@@ -56,7 +56,8 @@ MONGO_URL = YOUR_MONGO_URL
 MONGO_USERNAME = YOUR_MONGO_USERNAME
 MONGO_PASSWORD = YOUR_MONGO_PASSWORD
 Database = YOUR_DATABASE_NAME
-Collection = YOUR_COLLECTION_NAME
+database_tasks_collection = YOUR_TASKS_COLLECTION_NAME
+database_user_collection = YOUR_USERS_COLLECTION_NAME
 SECRET_KEY = APP_SECRET_KEY
 ```
 5. **Run the application**

@@ -6,7 +6,7 @@ body {
 }
 .container {
     max-width: 600px;
-    margin: 20px auto;
+    margin: 100px auto 20px;
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
@@ -59,15 +59,15 @@ button[type="submit"]:hover, button[type="button"]:hover {
 }
 
 .task-status-not-started {
-    color: #FF6347; /* IndianRed */
+    color: #FF6347;
 }
 
 .task-status-in-progress {
-    color: #1E90FF; /* DodgerBlue */
+    color: #1E90FF;
 }
 
 .task-status-done {
-    color: #32CD32; /* LimeGreen */
+    color: #32CD32;
 }
 
 .delete-btn {
@@ -86,20 +86,16 @@ button[type="submit"]:hover, button[type="button"]:hover {
     background-color: #0C8950 !important;
 }
 
-.error-message {
-    color: #ff5555;
-    margin-top: 5px;
-    margin-left: 10px;
-}
-
 .alert.success {
+    font-size: 15px;
     margin-top: 5px;
-    margin-left: 10px;
+    margin-left: 5px;
     color: green;
 }
   
 .alert.error {
+    font-size: 15px;
     margin-top: 5px;
-    margin-left: 10px;
+    margin-left: 5px;
     color: red;
 }
