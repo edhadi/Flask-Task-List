@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='administration/navbar.css')}}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .users-container {
+            margin-left: 170px;
+            padding: 10px;
+            position: relative;
+            width: 50%;
+        }
+
+        .user-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .user-card p {
+            margin: 5px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .edit-btn {
+            position: absolute;
+            top: 20px;
+            right: 10px;
+            background-color: green;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            width: 70px;
+            height: 35px;
+            font-size: 16px;
+            line-height: 30px;
+        }
+
+        .user-card:hover .edit-btn {
+            opacity: 1;
+        }
+
+        .edit-btn:hover {
+            background-color: green;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 80px;
+            right: 10px;
+            background-color: red;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            width: 70px;
+            height: 35px;
+            font-size: 16px;
+            line-height: 30px;
+        }
+
+        .user-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            background-color: red;
+        }
+        .alert.success {
+            font-size: 15px;
+            margin-top: 5px;
+            margin-left: 5px;
+            color: green;
+        }
+
+        .alert.error {
+            font-size: 15px;
+            margin-top: 5px;
+            margin-left: 5px;
+            color: red;
+        }
+
+        .add-user-form {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-left: 5px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .pagination {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-top: 20px;
+        }
+
+        .pagination span {
+          margin: 0 10px;
+        }
+
+        .pagination a {
+          color: #007bff;
+          float: left;
+          padding: 8px 16px;
+          text-decoration: none;
+          transition: background-color 0.3s;
+          border: 1px solid #ddd;
+          margin: 0 4px;
+        }
+
+        .pagination a.active {
+          background-color: #007bff;
+          color: white;
+        }
+
+        .pagination a:hover:not(.active) {
+          background-color: #ddd;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 30%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .add-user-btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 5px;
+        }
+
+        .add-user-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    {% include "administration/admin_navbar.html" %}
+    <div class="users-container">
+        <h2>User Management</h2>
+        <p id="formError" class="error-message">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  {% for category, message in messages %}
+                    <div class="alert {{ category }}"> {{ message|capitalize }} </div>
+                  {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </p>
+        <h3>Add User</h3>
+        <form action="/admin/users" method="post" class="add-user-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter username..." required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter password..." required>
+            </div>
+            <button type="submit" class="add-user-btn">Add User</button>
+        </form>
+        {% for user in users %}
+        <div class="user-card">
+            <p><strong>Username: {{ user.username }}</strong></p>
+            <p><strong>Created:</strong> {{ user.created }}</p>
+            <p><strong>Admin:</strong> {{ user.admin }}</p>
+            <p><strong>Tasks:</strong> {{ user.tasks }}</p>
+            <form action="/admin/edit_user/{{ user._id }}" method="get">
+                <button type="submit" class="edit-btn">Edit</button>
+            </form>
+            <form action="/admin/delete_user" method="post">
+                <input type="hidden" name="deleteUser" value="{{ user._id }}">
+                <button type="submit" class="delete-btn">Delete</button>
+            </form>
+        </div>
+        {% endfor %}
+        <div class="pagination">
+            <a href="{{ url_for('admin_users', page=1) }}">&laquo;</a>
+            <span>Page {{ page }} of {{ total_pages }}</span>
+            <a href="{{ url_for('admin_users', page=total_pages) }}">&raquo;</a>
+        </div>
+    </div>
+</body>
+
+</html>

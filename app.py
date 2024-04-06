@@ -1,4 +1,5 @@
 from bson import ObjectId
+from math import ceil
 from datetime import datetime
 from flask import Flask, render_template, request, url_for, redirect, flash, session
 from pymongo import MongoClient
@@ -35,6 +36,8 @@ users_collection: Collection = database.get_collection(f"{database_users_collect
 index_template = "index.html"
 register_template = "authentication/register.html"
 login_template = "authentication/login.html"
+admin_template = "administration/admin.html"
+admin_edit_user_template = "administration/admin_edit_user.html"
 
 # Routes
 @app.route('/', methods=['GET', 'POST'])
@@ -122,6 +125,116 @@ def logout():
     session.pop('username')
     flash('You have succesfully logged out', 'success')
     return redirect(url_for('main'))
+
+def check_admin_session():
+    if "username" not in session:
+        flash('You do not have permission to access this page', 'error')
+        return False
+    
+    current_user = users_collection.find_one({"username": session["username"]})
+    if current_user and current_user.get("admin", 0) != 1:
+        flash('You must be an admin to access this page.', 'error')
+        return False
+    
+    return True
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if not check_admin_session():
+        return redirect(url_for('main'))
+    total_users = users_collection.count_documents({})
+    total_tasks = tasks_collection.count_documents({})
+    return render_template(admin_template, total_users=total_users, total_tasks=total_tasks)
+
+@app.route('/admin/users', methods=['POST','GET'])
+def admin_users():
+    if not check_admin_session():
+        return redirect(url_for('main'))
+    if request.method == 'POST':
+        user_name = request.form.get('username')
+        user_password = request.form.get('password')
+
+        if not user_name or not user_password:
+            flash('Fields cannot be empty', 'error')
+            return redirect(url_for('admin_users'))
+        else:
+            hasher = hashlib.shake_256()
+            hasher.update(user_password.encode("utf-8"))
+            hashed_password = hasher.digest(32)
+
+            existing_user = users_collection.find_one({"$or": [{"username": user_name}]})
+
+            if existing_user:
+                flash(f'User {user_name} already exists', 'error')
+                return redirect(url_for('admin_users'))
+            else:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                data = {
+                    "created": timestamp,
+                    "username": user_name,
+                    "password": hashed_password,
+                    "admin": 0,
+                    "tasks": 0
+                }
+                users_collection.insert_one(data)
+                flash(f'User {user_name} added successfully', 'success')
+                return redirect(url_for('admin_users'))
+
+    page = int(request.args.get('page', 1))
+    per_page = 5
+    total_users = users_collection.count_documents({})
+    total_pages = ceil(total_users / per_page)
+    offset = (page - 1) * per_page
+    
+    users = list(users_collection.find({}, {"password": 0}).skip(offset).limit(per_page))
+
+    return render_template('administration/admin_users.html', users=users, total_pages=total_pages, page=page)
+
+@app.route('/admin/edit_user/<user_id>', methods=['POST', 'GET'])
+def admin_edit_user(user_id):
+    if not check_admin_session():
+        return redirect(url_for('main'))
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if request.method == 'POST':
+        username = request.form.get("username")
+        password = request.form.get("password")
+        admin_status = request.form.get("admin")
+        if user:
+            hasher = hashlib.shake_256()
+            hasher.update(password.encode("utf-8"))
+            hashed_password = hasher.digest(32)
+            update_query = {}
+            if username:
+                update_query["username"] = username
+            if password:
+                update_query["password"] = hashed_password
+            if admin_status is not None:
+                update_query["admin"] = int(admin_status)
+            if update_query:
+                users_collection.update_one({"_id": user["_id"]}, {"$set": update_query})
+                flash('User successfully updated', 'success')
+                return redirect(url_for('admin_users'))
+            else:
+                flash('No fields provided for update', 'error')
+                return redirect(url_for('admin_users'))
+
+    return render_template(admin_edit_user_template, user=user)
+
+@app.route('/admin/delete_user', methods=['POST'])
+def admin_delete_user():
+    if not check_admin_session():
+        return redirect(url_for('main'))
+    delete_user = request.form.get("deleteUser")
+    if delete_user:
+        result = users_collection.delete_one({"_id": ObjectId(delete_user)})
+        if result.deleted_count == 1:
+            flash("User deleted succefully", "success")
+        else:
+            flash("Error deleting user", "error")
+    else:
+        flash("Invalid request", "error")
+    
+    return redirect(url_for('admin_users'))
 
 @app.route('/add_task', methods=['POST'])
 def add_task():
